@@ -1,14 +1,17 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 import requests
 import uuid
 import sys
 import os
+from dotenv import load_dotenv
+
+# পাথ সেটআপ
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import data_manager
 
-# এখানে তোমার টোকেন দাও
-TELEGRAM_BOT_TOKEN = os.getenv("YOUR_BOT_TOKEN")
-CHANNEL_ID = os.getenv("YOUR_CHANNEL_ID")
+TELEGRAM_BOT_TOKEN = os.getenv("BOT_TOKEN")
+CHANNEL_ID = os.getenv("P_C_ID")
 
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
 
@@ -24,7 +27,8 @@ def search():
 @app.route('/product/<id>')
 def product_detail(id):
     p = next((x for x in data_manager.get_products() if x['id'] == id), None)
-    return render_template('product.html', product=p) if p else ("Not Found", 404)
+    if p: return render_template('product.html', product=p)
+    return "Product Not Found", 404
 
 @app.route('/cart')
 def cart():
@@ -35,10 +39,25 @@ def place_order():
     data = request.json
     data['order_id'] = str(uuid.uuid4())[:8]
     data_manager.add_order(data)
+    
+    # Telegram Notification Logic
     try:
-        msg = f"📦 <b>নতুন অর্ডার! (#{data['order_id']})</b>\n👤 {data['customer_name']}\n📞 {data['phone']}\n🏠 {data['address']}\n💰 মোট: ৳ {data['total']}\n\n<b>পণ্য:</b>\n" + "\n".join([f"- {i['name']} (x{i['qty']})" for i in data['items']])
-        requests.post(f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage", json={"chat_id": CHANNEL_ID, "text": msg, "parse_mode": "HTML"})
-    except: pass
+        msg = f"📦 <b>New Order Received! (#{data['order_id']})</b>\n\n"
+        msg += f"👤 Name: {data['customer_name']}\n"
+        msg += f"📞 Phone: {data['phone']}\n"
+        msg += f"🏠 Address: {data['address']}\n"
+        msg += f"💰 Total: ${data['total']}\n\n"
+        msg += "<b>Items:</b>\n"
+        for i in data['items']:
+            msg += f"- {i['name']} (x{i['qty']})\n"
+            
+        requests.post(
+            f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
+            json={"chat_id": CHANNEL_ID, "text": msg, "parse_mode": "HTML"}
+        )
+    except Exception as e:
+        print(f"Telegram Error: {e}")
+
     return jsonify({"success": True})
 
 def run_app():
