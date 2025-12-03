@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Shop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { transition: background-color 0.3s, color 0.3s; }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .dark body { background-color: #1a202c; color: #cbd5e0; }
+        .dark .card { background-color: #2d3748; color: white; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen">
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold text-indigo-600">🚀 FastShop</a>
+            <div class="flex items-center space-x-4">
+                <a href="/" class="hover:text-indigo-500 font-medium">হোম</a>
+                <a href="/cart" class="relative hover:text-indigo-500 font-medium">
+                    কার্ট 🛒 <span id="cart-count" class="bg-red-500 text-white text-xs rounded-full px-1 absolute -top-2 -right-2">0</span>
+                </a>
+                <button onclick="toggleTheme()" class="p-2">🌓</button>
+            </div>
+        </div>
+    </header>
+    <main class="flex-grow container mx-auto px-4 py-8 fade-in">
+        {% block content %}{% endblock %}
+    </main>
+    <script>
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+        }
+        if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        document.getElementById('cart-count').innerText = cart.length;
+    </script>
+</body>
+  </html>
