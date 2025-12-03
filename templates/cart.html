@@ -1,40 +1,157 @@
 {% extends 'base.html' %}
+
+{% block head %}
+<style>
+    .cart-container { max-width: 1200px; margin: 0 auto; padding: 20px; display: flex; gap: 20px; align-items: flex-start; }
+    
+    /* Left: List */
+    .cart-left { flex: 3; background-color: white; padding: 20px; border-radius: 4px; }
+    .cart-header { border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .cart-header h1 { font-size: 24px; font-weight: 500; }
+    
+    .cart-item { display: flex; gap: 20px; border-bottom: 1px solid #ddd; padding: 20px 0; animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+    
+    .item-image img { width: 120px; height: 120px; object-fit: contain; }
+    .item-details { flex: 1; }
+    .item-title { font-size: 16px; font-weight: 500; color: #0F1111; line-height: 1.3; margin-bottom: 5px; }
+    .stock-ok { color: #007600; font-size: 12px; margin-bottom: 5px; }
+    .item-actions a { font-size: 12px; color: #007185; margin: 0 5px; cursor: pointer; }
+    .item-actions a:hover { text-decoration: underline; }
+    .item-price { font-size: 18px; font-weight: 700; width: 100px; text-align: right; }
+
+    /* Right: Checkout */
+    .cart-right { flex: 1; background-color: white; padding: 20px; border-radius: 4px; position: sticky; top: 80px; }
+    .subtotal-box { font-size: 18px; margin-bottom: 15px; }
+    
+    .input-group { margin-bottom: 12px; }
+    .input-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+    .input-group input, .input-group textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; transition: border-color 0.2s; }
+    .input-group input:focus, .input-group textarea:focus { border-color: #e77600; box-shadow: 0 0 3px 2px rgba(228,121,17,.5); outline: none; }
+
+    .btn-checkout { width: 100%; background-color: #ffd814; border: 1px solid #fcd200; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 13px; margin-top: 10px; box-shadow: 0 2px 5px rgba(213,217,217,.5); }
+    .btn-checkout:hover { background-color: #f7ca00; }
+
+    @media (max-width: 900px) { .cart-container { flex-direction: column; } .cart-left, .cart-right { width: 100%; } }
+</style>
+{% endblock %}
+
 {% block content %}
-<h1 class="text-3xl font-bold mb-6 text-center">শপিং কার্ট</h1>
-<div class="grid md:grid-cols-2 gap-10 max-w-5xl mx-auto">
-    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-        <h2 class="text-xl font-semibold mb-4 border-b pb-2">পণ্যসমূহ</h2>
-        <div id="cart-items" class="space-y-4"></div>
-        <div class="mt-6 border-t pt-4 font-bold text-xl">মোট: <span id="total-price">৳ 0</span></div>
+<div class="cart-container">
+    <div class="cart-left">
+        <div class="cart-header">
+            <h1>Shopping Cart</h1>
+            <p style="font-size: 12px; color: #565959;">Price</p>
+        </div>
+        <div id="cart-items-container">
+            <!-- Items rendered by JS -->
+        </div>
     </div>
-    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-        <h2 class="text-xl font-semibold mb-4 border-b pb-2">ডেলিভারি তথ্য</h2>
-        <form id="checkout-form" onsubmit="placeOrder(event)">
-            <input type="text" name="name" placeholder="নাম" required class="w-full p-2 border rounded mb-3 dark:bg-gray-700">
-            <input type="text" name="phone" placeholder="ফোন" required class="w-full p-2 border rounded mb-3 dark:bg-gray-700">
-            <textarea name="address" placeholder="ঠিকানা" required class="w-full p-2 border rounded mb-3 dark:bg-gray-700"></textarea>
-            <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700">অর্ডার করুন</button>
-        </form>
+
+    <div class="cart-right">
+        <div class="subtotal-box">
+            Subtotal: <span style="font-weight: 700;" id="subtotal-display">$0.00</span>
+        </div>
+        
+        <div style="border-top: 1px solid #ddd; padding-top: 15px; margin-top: 15px;">
+            <div class="input-group">
+                <label>Full Name</label>
+                <input type="text" id="c_name">
+            </div>
+            <div class="input-group">
+                <label>Phone Number</label>
+                <input type="text" id="c_phone">
+            </div>
+            <div class="input-group">
+                <label>Shipping Address</label>
+                <textarea id="c_address" rows="3"></textarea>
+            </div>
+        </div>
+
+        <button class="btn-checkout" onclick="placeOrder()">Proceed to Checkout</button>
     </div>
 </div>
+
 <script>
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
-    const container = document.getElementById('cart-items');
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
     let total = 0;
-    if (cart.length > 0) {
-        cart.forEach((item, index) => {
-            total += item.price * item.qty;
-            container.innerHTML += `<div class="flex justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded"><p>${item.name} (${item.qty})</p><p>৳ ${item.price * item.qty} <button onclick="rm(${index})" class="text-red-500 ml-2">✖</button></p></div>`;
-        });
-        document.getElementById('total-price').innerText = '৳ ' + total;
-    } else container.innerHTML = '<p class="text-center">কার্ট খালি</p>';
-    function rm(i) { cart.splice(i, 1); localStorage.setItem('cart', JSON.stringify(cart)); window.location.reload(); }
-    async function placeOrder(e) {
-        e.preventDefault();
-        if (cart.length === 0) return alert("কার্ট খালি!");
-        const data = { customer_name: e.target.name.value, phone: e.target.phone.value, address: e.target.address.value, items: cart, total: total };
-        const res = await fetch('/place_order', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-        if ((await res.json()).success) { alert("অর্ডার সফল!"); localStorage.removeItem('cart'); window.location.href = '/'; }
+
+    function renderCart() {
+        const container = document.getElementById('cart-items-container');
+        container.innerHTML = '';
+        total = 0;
+
+        if(cart.length === 0) {
+            container.innerHTML = '<p style="padding: 20px; font-size: 16px;">Your Amazon Cart is empty.</p>';
+        } else {
+            cart.forEach((item, index) => {
+                total += item.price * item.qty;
+                container.innerHTML += `
+                    <div class="cart-item">
+                        <div class="item-image"><img src="${item.image}"></div>
+                        <div class="item-details">
+                            <div class="item-title">${item.name}</div>
+                            <div class="stock-ok">In Stock</div>
+                            <div style="font-size: 13px; color: #565959;">FREE Shipping</div>
+                            <div class="item-actions" style="margin-top: 10px;">
+                                Qty: <b>${item.qty}</b> <span style="color:#ddd">|</span> 
+                                <a onclick="removeItem(${index})">Delete</a>
+                            </div>
+                        </div>
+                        <div class="item-price">$${item.price}</div>
+                    </div>
+                `;
+            });
+        }
+        document.getElementById('subtotal-display').innerText = '$' + total.toFixed(2);
     }
+
+    function removeItem(index) {
+        cart.splice(index, 1);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        renderCart();
+        updateCount();
+    }
+
+    async function placeOrder() {
+        if (cart.length === 0) return alert("Cart is empty");
+        const name = document.getElementById('c_name').value;
+        const phone = document.getElementById('c_phone').value;
+        const addr = document.getElementById('c_address').value;
+
+        if (!name || !phone || !addr) return alert("Please fill in all delivery details");
+
+        const btn = document.querySelector('.btn-checkout');
+        btn.innerText = "Processing...";
+        btn.disabled = true;
+
+        const data = {
+            customer_name: name,
+            phone: phone,
+            address: addr,
+            items: cart,
+            total: total
+        };
+
+        try {
+            const res = await fetch('/place_order', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (result.success) {
+                alert("Order Placed Successfully!");
+                localStorage.removeItem('cart');
+                window.location.href = '/';
+            }
+        } catch (e) { 
+            alert("Error placing order"); 
+            btn.innerText = "Proceed to Checkout";
+            btn.disabled = false;
+        }
+    }
+
+    renderCart();
 </script>
 {% endblock %}
