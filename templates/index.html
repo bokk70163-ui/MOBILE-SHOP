@@ -1,24 +1,70 @@
 {% extends 'base.html' %}
+
+{% block head %}
+<style>
+    .hero-section {
+        background-image: url('https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=2070&auto=format&fit=crop');
+        background-size: cover;
+        background-position: center;
+        height: 250px;
+        display: flex;
+        justify-content: center;
+        position: relative;
+        mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 60%, rgba(0,0,0,0));
+        -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 60%, rgba(0,0,0,0));
+    }
+
+    .shop-section {
+        display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; padding: 20px;
+        margin-top: -100px; z-index: 10; position: relative; max-width: 1500px; margin-left: auto; margin-right: auto;
+    }
+
+    .box {
+        background-color: white; width: 280px; padding: 20px; 
+        display: flex; flex-direction: column; justify-content: space-between; z-index: 10;
+        cursor: pointer;
+        transition: transform 0.3s ease, box-shadow 0.3s ease; /* Animation */
+    }
+
+    .box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+
+    .box h2 { font-size: 18px; font-weight: bold; margin-bottom: 10px; height: 44px; overflow: hidden; line-height: 1.2; }
+    
+    .box-img {
+        height: 220px; width: 100%; 
+        background-size: contain; background-repeat: no-repeat; background-position: center;
+        margin-bottom: 10px;
+        transition: transform 0.3s;
+    }
+    
+    .box:hover .box-img { transform: scale(1.05); } /* Image Zoom on Hover */
+
+    .box-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+    .box a { color: #007185; font-size: 13px; font-weight: 500; }
+    .price-tag { font-size: 18px; font-weight: 500; color: #111; }
+    .price-symbol { font-size: 12px; vertical-align: top; }
+
+    @media (max-width: 600px) { 
+        .box { width: 100%; margin: 0 10px; } 
+        .shop-section { margin-top: -50px; }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="text-center mb-10">
-    <h1 class="text-4xl font-bold mb-4">আমাদের কালেকশন</h1>
-    <form action="/search" method="get" class="max-w-md mx-auto flex">
-        <input type="text" name="q" placeholder="পণ্য খুঁজুন..." class="flex-grow p-3 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-none">
-        <button type="submit" class="bg-indigo-600 text-white px-6 rounded-r-lg hover:bg-indigo-700">খুঁজুন</button>
-    </form>
-</div>
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+<div class="hero-section"></div>
+
+<div class="shop-section">
     {% for product in products %}
-    <div class="card bg-white rounded-xl shadow-lg overflow-hidden flex flex-col">
-        <div class="h-48 overflow-hidden bg-gray-200">
-            <img src="{{ product.image }}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/300'">
-        </div>
-        <div class="p-5 flex-grow">
-            <h3 class="text-xl font-bold mb-2">{{ product.name }}</h3>
-            <p class="text-indigo-600 font-bold text-lg">৳ {{ product.price }}</p>
-        </div>
-        <div class="p-5 pt-0 mt-auto">
-            <a href="/product/{{ product.id }}" class="block w-full text-center bg-gray-800 text-white py-2 rounded-lg hover:bg-gray-900 transition">বিস্তারিত</a>
+    <div class="box" onclick="window.location.href='/product/{{ product.id }}'">
+        <h2>{{ product.name }}</h2>
+        <div class="box-img" style="background-image: url('{{ product.image }}');"></div>
+        <div class="box-footer">
+            <span class="price-tag"><span class="price-symbol">$</span>{{ product.price }}</span>
+            <a href="/product/{{ product.id }}">See Details</a>
         </div>
     </div>
     {% endfor %}
