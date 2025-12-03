@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="text-center mb-10">
+    <h1 class="text-4xl font-bold mb-4">আমাদের কালেকশন</h1>
+    <form action="/search" method="get" class="max-w-md mx-auto flex">
+        <input type="text" name="q" placeholder="পণ্য খুঁজুন..." class="flex-grow p-3 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-none">
+        <button type="submit" class="bg-indigo-600 text-white px-6 rounded-r-lg hover:bg-indigo-700">খুঁজুন</button>
+    </form>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    {% for product in products %}
+    <div class="card bg-white rounded-xl shadow-lg overflow-hidden flex flex-col">
+        <div class="h-48 overflow-hidden bg-gray-200">
+            <img src="{{ product.image }}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/300'">
+        </div>
+        <div class="p-5 flex-grow">
+            <h3 class="text-xl font-bold mb-2">{{ product.name }}</h3>
+            <p class="text-indigo-600 font-bold text-lg">৳ {{ product.price }}</p>
+        </div>
+        <div class="p-5 pt-0 mt-auto">
+            <a href="/product/{{ product.id }}" class="block w-full text-center bg-gray-800 text-white py-2 rounded-lg hover:bg-gray-900 transition">বিস্তারিত</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
