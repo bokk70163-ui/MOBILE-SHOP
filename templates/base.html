@@ -1,42 +1,115 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Shop</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Amazon Clone Shop</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { transition: background-color 0.3s, color 0.3s; }
-        .fade-in { animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .dark body { background-color: #1a202c; color: #cbd5e0; }
-        .dark .card { background-color: #2d3748; color: white; }
+        /* --- GLOBAL & ANIMATIONS --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Arial", sans-serif; }
+        
+        body { 
+            background-color: #eaeded; 
+            font-size: 14px; /* Standard Font Size */
+            opacity: 0; 
+            animation: fadeIn 0.8s forwards; /* Page Load Animation */
+        }
+
+        @keyframes fadeIn { to { opacity: 1; } }
+
+        a { text-decoration: none; color: inherit; transition: color 0.2s; }
+        a:hover { color: #c7511f; }
+        button { cursor: pointer; transition: transform 0.1s, background-color 0.2s; }
+        button:active { transform: scale(0.96); }
+
+        /* HEADER */
+        header { background-color: #131921; color: white; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .navbar { display: flex; align-items: center; padding: 8px 15px; gap: 15px; height: 60px; }
+        
+        .nav-logo { display: flex; align-items: center; padding: 5px; border: 1px solid transparent; border-radius: 2px; cursor: pointer; }
+        .nav-logo:hover { border-color: white; }
+        .nav-logo h2 { font-size: 22px; font-weight: bold; letter-spacing: -1px; margin: 0; }
+        .nav-logo span { color: #febd69; }
+
+        .nav-search { flex: 1; display: flex; border-radius: 4px; overflow: hidden; height: 40px; transition: box-shadow 0.2s; }
+        .nav-search:focus-within { box-shadow: 0 0 0 3px #f90; }
+        .search-input { flex: 1; padding: 0 10px; border: none; outline: none; font-size: 14px; }
+        .search-icon { background-color: #febd69; color: #131921; width: 45px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: background 0.2s; }
+        .search-icon:hover { background-color: #f2a747; }
+
+        .nav-cart { display: flex; align-items: flex-end; padding: 5px 10px; border: 1px solid transparent; border-radius: 2px; cursor: pointer; color: white; }
+        .nav-cart:hover { border-color: white; }
+        .nav-cart i { font-size: 26px; }
+        .nav-cart span { font-size: 14px; font-weight: bold; margin-left: 5px; color: #f08804; }
+        
+        .panel { background-color: #232f3e; color: white; padding: 8px 15px; font-size: 13px; display: flex; gap: 15px; font-weight: 500; }
+        .panel div { cursor: pointer; border: 1px solid transparent; padding: 2px 5px; border-radius: 2px; }
+        .panel div:hover { border-color: white; }
+        
+        /* FOOTER */
+        footer { margin-top: 20px; background-color: #232f3e; color: white; text-align: center; font-size: 12px; }
+        .foot-panel1 { background-color: #37475a; height: 40px; display: flex; justify-content: center; align-items: center; font-size: 13px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+        .foot-panel1:hover { background-color: #485769; }
+        .copyright { padding: 20px; color: #ddd; }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .navbar { flex-wrap: wrap; height: auto; padding-bottom: 10px; }
+            .nav-search { order: 2; width: 100%; margin-top: 5px; }
+            .panel { overflow-x: auto; white-space: nowrap; }
+        }
     </style>
+    {% block head %}{% endblock %}
 </head>
-<body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen">
-    <header class="bg-white shadow-md sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="/" class="text-2xl font-bold text-indigo-600">🚀 FastShop</a>
-            <div class="flex items-center space-x-4">
-                <a href="/" class="hover:text-indigo-500 font-medium">হোম</a>
-                <a href="/cart" class="relative hover:text-indigo-500 font-medium">
-                    কার্ট 🛒 <span id="cart-count" class="bg-red-500 text-white text-xs rounded-full px-1 absolute -top-2 -right-2">0</span>
-                </a>
-                <button onclick="toggleTheme()" class="p-2">🌓</button>
+<body>
+    <header>
+        <div class="navbar">
+            <div class="nav-logo" onclick="window.location.href='/'">
+                <h2>amaz<span>on</span></h2>
+            </div>
+            <div class="nav-search">
+                <input type="text" placeholder="Search Amazon" class="search-input" id="searchBox">
+                <div class="search-icon" onclick="doSearch()"><i class="fa-solid fa-magnifying-glass"></i></div>
+            </div>
+            <div class="nav-cart" onclick="window.location.href='/cart'">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span id="cart-count">0</span>
             </div>
         </div>
+        <div class="panel">
+            <div><i class="fa-solid fa-bars"></i> All</div>
+            <div>Today's Deals</div>
+            <div>Customer Service</div>
+            <div>Registry</div>
+            <div>Gift Cards</div>
+            <div>Sell</div>
+        </div>
     </header>
-    <main class="flex-grow container mx-auto px-4 py-8 fade-in">
-        {% block content %}{% endblock %}
-    </main>
+
+    {% block content %}{% endblock %}
+
+    <footer>
+        <div class="foot-panel1" onclick="window.scrollTo({top: 0, behavior: 'smooth'});">Back to Top</div>
+        <div class="copyright">© 1996-2025, Amazon Clone, Inc. or its affiliates</div>
+    </footer>
+
     <script>
-        function toggleTheme() {
-            document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+        // Update Cart Count
+        function updateCount() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            document.getElementById('cart-count').innerText = cart.length;
         }
-        if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
-        document.getElementById('cart-count').innerText = cart.length;
+        // Search Function
+        function doSearch() {
+            const query = document.getElementById('searchBox').value;
+            window.location.href = '/search?q=' + query;
+        }
+        // Enter Key for Search
+        document.getElementById('searchBox').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') doSearch();
+        });
+        updateCount();
     </script>
 </body>
-  </html>
+</html>
